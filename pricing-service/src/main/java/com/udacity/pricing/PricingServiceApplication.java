@@ -24,10 +24,10 @@ public class PricingServiceApplication {
     }
 
     @Bean
-    public CommandLineRunner run(PriceRepository priceRepository) throws Exception{
+    public CommandLineRunner initDataBase(PriceRepository priceRepository) throws Exception{
         return args -> {
-            for(int i=0; i<20; i++) {
-                priceRepository.save(new Price("USD", randomPrice()));
+            for(long i=0; i<20; i++) {
+                priceRepository.save(new Price("USD", randomPrice(), i + 1));
             }
         };
     }
