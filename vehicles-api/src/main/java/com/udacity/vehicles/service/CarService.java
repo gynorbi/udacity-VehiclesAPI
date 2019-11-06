@@ -3,6 +3,8 @@ package com.udacity.vehicles.service;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.CarRepository;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 /**
@@ -37,12 +39,12 @@ public class CarService {
      * @return the requested car's information, including location and price
      */
     public Car findById(Long id) {
-        /**
-         * TODO: Find the car by ID from the `repository` if it exists.
-         *   If it does not exist, throw a CarNotFoundException
-         *   Remove the below code as part of your implementation.
-         */
-        Car car = new Car();
+
+        Optional<Car> optionalCar = repository.findById(id);
+        if(optionalCar.isEmpty()){
+            throw new CarNotFoundException("Car with id '"+id+"' can't be found.");
+        }
+        Car car = optionalCar.get();
 
         /**
          * TODO: Use the Pricing Web client you create in `VehiclesApiApplication`
@@ -78,7 +80,9 @@ public class CarService {
                         carToBeUpdated.setDetails(car.getDetails());
                         carToBeUpdated.setLocation(car.getLocation());
                         return repository.save(carToBeUpdated);
-                    }).orElseThrow(CarNotFoundException::new);
+                    }).orElseThrow(()-> {
+                        return new CarNotFoundException("Car with id '"+car.getId()+"' can't be found. Can't modify it.");
+                    });
         }
 
         return repository.save(car);
@@ -89,16 +93,11 @@ public class CarService {
      * @param id the ID number of the car to delete
      */
     public void delete(Long id) {
-        /**
-         * TODO: Find the car by ID from the `repository` if it exists.
-         *   If it does not exist, throw a CarNotFoundException
-         */
-
-
-        /**
-         * TODO: Delete the car from the repository.
-         */
-
-
+        if(repository.existsById(id)) {
+            repository.deleteById(id);
+        }
+        else{
+            throw new CarNotFoundException("Car with id '"+id+"' can't be found.");
+        }
     }
 }
