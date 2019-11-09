@@ -47,6 +47,7 @@ public class CarServiceTests {
         updatedLocation.setAddress(ADDRESS);
         given(priceClient.getPrice(any())).willReturn(PRICE);
         given(repository.findById(any())).willReturn(Optional.of(car));
+        given(repository.save(any())).will(i -> i.getArguments()[0]);
         given(mapsClient.getAddress(any())).willReturn(updatedLocation);
     }
 
@@ -55,6 +56,17 @@ public class CarServiceTests {
         Car car = carService.findById(1L);
         Assert.assertEquals("Car should have price of USD 1000",PRICE, car.getPrice());
         Assert.assertEquals("Car should have address", ADDRESS, car.getLocation().getAddress());
+    }
+
+    @Test
+    public void updateCarCondition(){
+        Car originalCar = getCar();
+        originalCar.setId(1L);
+        originalCar.setCondition(Condition.NEW);
+
+        Car updatedCar = carService.save(originalCar);
+
+        Assert.assertEquals("Updated car should have condition NEW.", Condition.NEW, updatedCar.getCondition());
     }
 
     /**
