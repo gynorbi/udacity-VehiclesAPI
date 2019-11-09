@@ -6,6 +6,8 @@ import com.netflix.discovery.shared.Application;
 import com.udacity.vehicles.domain.manufacturer.Manufacturer;
 import com.udacity.vehicles.domain.manufacturer.ManufacturerRepository;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -24,6 +26,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 @EnableJpaAuditing
 @EnableEurekaClient
 public class VehiclesApiApplication {
+
+    private final static Logger log = LoggerFactory.getLogger(VehiclesApiApplication.class);
 
     public static void main(String[] args) {
         SpringApplication.run(VehiclesApiApplication.class, args);
@@ -65,14 +69,19 @@ public class VehiclesApiApplication {
      * @return created pricing endpoint
      */
     @Bean(name="pricing")
-    public WebClient webClientPricing(EurekaClient eurekaClient) {
-        Application application =
-                eurekaClient.getApplication("pricing-service");
-        InstanceInfo instanceInfo = application.getInstances().get(0);
-        String hostname = instanceInfo.getHostName();
-        int port = instanceInfo.getPort();
-        String endpoint = "http://"+hostname+":"+port;
-
+    public WebClient webClientPricing(EurekaClient eurekaClient, @Value("${pricing.endpoint}") String defaultEndpoint ) {
+        String endpoint = defaultEndpoint;
+        try {
+            Application application =
+                    eurekaClient.getApplication("pricing-service");
+            InstanceInfo instanceInfo = application.getInstances().get(0);
+            String hostname = instanceInfo.getHostName();
+            int port = instanceInfo.getPort();
+            endpoint = "http://" + hostname + ":" + port;
+        }
+        catch (Exception ex){
+            log.warn("Can't get pricing endpoint from Eureka. Using default endpoint: {}", endpoint);
+        }
         return WebClient.create(endpoint);
     }
 }
