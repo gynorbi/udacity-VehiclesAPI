@@ -21,7 +21,7 @@ public class VehicleClient {
         try{
             log.info("Trying to validate vehicle: "+vehicleId);
             Mono<HttpStatus> monoStatus = client.get()
-                    .uri("/cars")
+                    .uri("/cars/"+vehicleId)
                     .exchange()
                     .map(response -> response.statusCode());
 
