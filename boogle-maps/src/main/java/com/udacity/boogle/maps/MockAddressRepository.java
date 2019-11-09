@@ -1,8 +1,6 @@
 package com.udacity.boogle.maps;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -14,13 +12,13 @@ class MockAddressRepository {
      * Gets a random address from the list.
      * @return A new, random address split into street, city, state and zip
      */
-    static Address getRandom() {
+    static Address getAddress(Double lat, Double lon) {
+        int addressIndex = getAddressIndex(lat, lon);
+        String address = ADDRESSES[addressIndex];
+        return mapStringToAddress(address);
+    }
 
-        Random generator = new Random();
-        int randomIndex = generator.nextInt(ADDRESSES.length);
-
-        String address = ADDRESSES[randomIndex];
-
+    private static Address mapStringToAddress(String address){
         String[] addressParts = address.split(",");
         String streetAndNumber = addressParts[0];
         String cityStateAndZip = addressParts[1];
@@ -34,9 +32,28 @@ class MockAddressRepository {
         String zip = list.pollLast();
         String state = list.pollLast();
         String city = String.join(" ", list);
-
         return new Address(streetAndNumber, city, state, zip);
     }
+
+    private static int getAddressIndex(Double lat, Double lon) {
+        LatLon latLon = new LatLon(lat,lon);
+        int addressIndex;
+        if(ASSIGNED_ADDRESSES.containsKey(latLon)){
+            addressIndex = ASSIGNED_ADDRESSES.get(latLon);
+        }
+        else {
+            Random generator = new Random();
+            addressIndex = generator.nextInt(ADDRESSES.length);
+            ASSIGNED_ADDRESSES.put(latLon,addressIndex);
+        }
+        return addressIndex;
+    }
+
+    /**
+     * HashMap to store address indexes that have been already assigned to lat-lon coordinate pairs.
+     */
+    private static Map<LatLon, Integer> ASSIGNED_ADDRESSES = new HashMap<>();
+
 
     /**
      * An array of random addresses for use in getRandom()
